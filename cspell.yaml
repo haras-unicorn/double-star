@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/streetsidesoftware/cspell/main/packages/cspell-types/cspell.schema.json
+
+useGitignore: true
+version: "0.2"
+language: en
+words:
+  - "numtide"
+  - "nixpkgs"
+  - "nixos"
+  - "pkgs"
+  - "nushell"
+  - "markdownlint"
+  - "langservers"
+  - "taplo"
+  - "haras"
