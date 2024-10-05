@@ -1,17 +1,39 @@
-[language-server.nil]
-command = "nil"
+# markdown
+
+[language-server.marksman]
+command = "marksman"
+args = ["server"]
+
+[[language]]
+name = "markdown"
+auto-format = true
+formatter = { command = "prettier", args = ["--parser", "markdown"] }
+language-servers = ["marksman"]
+
+# toml
 
 [language-server.taplo]
 command = "taplo"
 args = ["lsp", "stdio"]
 
+[[language]]
+name = "toml"
+auto-format = true
+language-servers = ["taplo"]
+
+# yaml
+
 [language-server.yaml-language-server]
 command = "yaml-language-server"
 args = ["--stdio"]
 
-[language-server.marksman]
-command = "marksman"
-args = ["server"]
+[[language]]
+name = "yaml"
+auto-format = true
+formatter = { command = "prettier", args = ["--parser", "yaml"] }
+language-servers = ["yaml-language-server"]
+
+# json
 
 [language-server.vscode-json-language-server]
 command = "vscode-json-language-server"
@@ -23,30 +45,36 @@ format = { enable = true }
 json = { validate = { enable = true } }
 
 [[language]]
-name = "nix"
-auto-format = true
-formatter = { command = "nixpkgs-fmt" }
-language-servers = ["nil"]
-
-[[language]]
-name = "yaml"
-auto-format = true
-formatter = { command = "prettier", args = ["--parser", "yaml"] }
-language-servers = ["yaml-language-server"]
-
-[[language]]
 name = "json"
 auto-format = true
 formatter = { command = "prettier", args = ["--parser", "json"] }
 language-servers = ["vscode-json-language-server"]
 
-[[language]]
-name = "toml"
-auto-format = true
-language-servers = ["taplo"]
+# nix
+
+[language-server.nil]
+command = "nil"
 
 [[language]]
-name = "markdown"
+name = "nix"
 auto-format = true
-formatter = { command = "prettier", args = ["--parser", "markdown"] }
-language-servers = ["marksman"]
+formatter = { command = "nixpkgs-fmt" }
+language-servers = ["nil"]
+
+# rust
+
+[language-server.rust-analyzer]
+command = "rust-analyzer"
+
+[language-server.rust-analyzer.config]
+inlayHints.bindingModeHints.enable = false
+inlayHints.closingBraceHints.minLines = 10
+inlayHints.closureReturnTypeHints.enable = "with_block"
+inlayHints.discriminantHints.enable = "fieldless"
+inlayHints.lifetimeElisionHints.enable = "skip_trivial"
+inlayHints.typeHints.hideClosureInitialization = false
+
+[[language]]
+name = "rust"
+auto-format = true
+language-servers = ["rust-analyzer"]

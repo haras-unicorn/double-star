@@ -3,13 +3,15 @@
 useGitignore: true
 version: "0.2"
 language: en
+ignorePaths:
+  - "Cargo.toml"
+  - "Cargo.lock"
+  - "Cargo.nix"
+  - "flake.nix"
+  - "flake.lock"
+  - "justfile"
+  - "cspell.yaml"
 words:
-  - "numtide"
-  - "nixpkgs"
-  - "nixos"
-  - "pkgs"
-  - "nushell"
-  - "markdownlint"
-  - "langservers"
-  - "taplo"
   - "haras"
+  - "orbitus"
+  - "nebulon"

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+services:
+  surrealdb:
+    container_name: double-star-surrealdb
+    image: surrealdb/surrealdb:v2.0.0-dev
+    environment:
+      SURREAL_USER: double-star
+      SURREAL_PASS: double-star
+      SURREAL_PATH: rocksdb:/data
+    command: start
+    networks:
+      - double-star-network
+    volumes:
+      - double-star-surrealdb-data:/data
+
+networks:
+  double-star-network:
+    name: double-star-network
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: dsbr
+
+volumes:
+  double-star-surrealdb-data:
+    name: double-star-surrealdb-data
+    driver: local
