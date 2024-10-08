@@ -4,6 +4,7 @@ set shell := ["nu", "-c"]
 root := absolute_path('')
 gitignore := absolute_path('.gitignore')
 prettierignore := absolute_path('.prettierignore')
+markdown-link-check-rc := absolute_path('.markdown-link-check.json')
 db := absolute_path('scripts/db.nu')
 
 default:
@@ -14,7 +15,7 @@ prepare:
     $env.DOUBLE_STAR_DB_HOST = ( \
       (docker container inspect double-star-surrealdb \
       | from json).0.NetworkSettings.Networks.double-star-network.IPAddress)
-    
+
 cargo2nix:
     cd '{{ root }}'; yes yes | cargo2nix
 
@@ -22,6 +23,8 @@ format:
     cd '{{ root }}'; just --fmt --unstable
 
     nixpkgs-fmt '{{ root }}'
+
+    try { markdownlint --ignore-path '{{ gitignore }}' '{{ root }}' }
 
     prettier --write \
       --ignore-path '{{ gitignore }}' \
@@ -40,20 +43,18 @@ lint:
     cspell lint '{{ root }}' \
       --no-progress
 
-    markdownlint '{{ root }}'
+    markdownlint --ignore-path '{{ gitignore }}' '{{ root }}'
     markdown-link-check \
-      --config .markdown-link-check.json \
-      --quiet ...(glob '{{ root }}/**/*.md')
+      --config '{{ markdown-link-check-rc }}' \
+      --quiet ...(fd '.*\.md' | lines)
 
     cd '{{ root }}'; cargo clippy -- -D warnings
 
 test:
     cd '{{ root }}'; cargo test
 
-
 db *args:
     {{ db }} {{ args }}
-
 
 [confirm("This will clean docker containers. Do you want to continue?")]
 clean:

@@ -15,34 +15,38 @@
   // reason = "Use tracing instead"
 )]
 
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use tracing_subscriber::{
+  layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
+};
 
 #[tokio::main]
 #[tracing::instrument]
 async fn main() -> anyhow::Result<()> {
-    let format_layer = tracing_subscriber::fmt::layer();
-    let (filter_layer, filter_handle) =
-        tracing_subscriber::reload::Layer::new(build_tracing_filter("info")?);
-    tracing_subscriber::registry()
-        .with(filter_layer)
-        .with(format_layer)
-        .try_init()?;
+  let format_layer = tracing_subscriber::fmt::layer();
+  let (filter_layer, filter_handle) =
+    tracing_subscriber::reload::Layer::new(build_tracing_filter("info")?);
+  tracing_subscriber::registry()
+    .with(filter_layer)
+    .with(format_layer)
+    .try_init()?;
 
-    // TODO: from config when loaded if needed
-    let log_level = "info".to_string();
-    filter_handle.modify(move |filter| {
-        #[allow(clippy::unwrap_used)] // NOTE: static and env doesn't change
-        let new_filter = build_tracing_filter(log_level.as_str()).unwrap();
-        *filter = new_filter;
-    })?;
+  // TODO: from config when loaded if needed
+  let log_level = "info".to_string();
+  filter_handle.modify(move |filter| {
+    #[allow(clippy::unwrap_used)] // NOTE: static and env doesn't change
+    let new_filter = build_tracing_filter(log_level.as_str()).unwrap();
+    *filter = new_filter;
+  })?;
 
-    Ok(())
+  Ok(())
 }
 
 fn build_tracing_filter(level: &str) -> anyhow::Result<EnvFilter> {
-    Ok(tracing_subscriber::EnvFilter::builder()
-        .with_default_directive(tracing::level_filters::LevelFilter::WARN.into())
-        .with_env_var("ORBITUS_LOG")
-        .from_env()?
-        .add_directive(format!("orbitus={level}").parse()?))
+  Ok(
+    tracing_subscriber::EnvFilter::builder()
+      .with_default_directive(tracing::level_filters::LevelFilter::WARN.into())
+      .with_env_var("ORBITUS_LOG")
+      .from_env()?
+      .add_directive(format!("orbitus={level}").parse()?),
+  )
 }

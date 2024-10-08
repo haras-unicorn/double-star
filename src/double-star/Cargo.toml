@@ -39,4 +39,9 @@ toml = "0.8.19"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 uuid = { version = "1.10.0", features = ["fast-rng", "v4"] }
-candle-core = "0.7.2"
+candle-core = { version = "0.7.2", features = ["cuda"] }
+candle-nn = { version = "0.7.2", features = ["cuda"] }
+candle-transformers = { version = "0.7.2", features = ["cuda"] }
+candle-onnx = "0.7.2"
+hf-hub = { version = "0.3.2", features = ["tokio"] }
+tokenizers = { version = "0.20.0", features = ["hf-hub"] }

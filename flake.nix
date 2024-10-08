@@ -23,11 +23,18 @@
           rustVersion = "1.75.0";
           packageFun = import ./Cargo.nix;
         };
+
+        # TODO: use actual user driver
+        nvidia_driver = (import <nixpkgs> {
+          inherit system;
+          config = { allowUnfree = true; };
+        }).linuxPackages.nvidia_x11_production;
       in
       {
         devShells.default = pkgs.mkShell {
           RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
           PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+          CUDA_PATH = "${pkgs.cudatoolkit}";
 
           shellHook = ''
             db="$(git rev-parse --show-toplevel)/scripts/db.nu"
@@ -43,6 +50,10 @@
             echo "DOUBLE_STAR_DB_PORT is set to $DOUBLE_STAR_DB_PORT"
 
             $db isready
+
+            export LD_LIBRARY_PATH="''${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}${nvidia_driver}/lib"
+            export EXTRA_LDFLAGS="''${EXTRA_LDFLAGS:+$EXTRA_LDFLAGS:}-L/lib -L${nvidia_driver}/lib"
+            export EXTRA_CCFLAGS="''${EXTRA_CCFLAGS:+$EXTRA_CCFLAGS:}-I/usr/include"
           '';
 
           packages = with pkgs; [
@@ -57,9 +68,8 @@
             nodePackages.cspell
 
             # tools
-            pkg-config
-            openssl
             jq
+            fd
 
             # markdown
             marksman
@@ -86,6 +96,13 @@
             rustfmt
             rust-analyzer
             cargo-edit
+
+            # build inputs
+            pkg-config
+            openssl
+            protobuf
+            cudatoolkit
+            nvidia_driver
 
             # surrealdb
             surrealdb
