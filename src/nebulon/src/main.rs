@@ -15,6 +15,7 @@
   // reason = "Use tracing instead"
 )]
 
+use nebulon;
 use tracing_subscriber::{
   layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
 };
@@ -37,6 +38,26 @@ async fn main() -> anyhow::Result<()> {
     let new_filter = build_tracing_filter(log_level.as_str()).unwrap();
     *filter = new_filter;
   })?;
+
+  let client = nebulon::connect(false).await?;
+  client.migrate().await?;
+
+  let chat = client.insert_chat().await?;
+  let message = client
+    .insert_message(chat.id, "Me".to_string(), "Hello, world!".to_string())
+    .await?;
+  let id = message.id;
+  let content = message.content;
+  println!("Created message {id} with content {content}");
+
+  let search = client.search_messages("hello").await?;
+  for message in search {
+    let id = message.record.id;
+    let chat = message.record.chat;
+    let highlights = message.highlights;
+    let score = message.score;
+    println!("Found message {id} from chat {chat} with highlights {highlights} and score {score}");
+  }
 
   Ok(())
 }

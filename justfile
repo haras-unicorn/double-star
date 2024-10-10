@@ -10,12 +10,6 @@ db := absolute_path('scripts/db.nu')
 default:
     @just --choose
 
-prepare:
-    docker compose up -d
-    $env.DOUBLE_STAR_DB_HOST = ( \
-      (docker container inspect double-star-surrealdb \
-      | from json).0.NetworkSettings.Networks.double-star-network.IPAddress)
-
 cargo2nix:
     cd '{{ root }}'; yes yes | cargo2nix
 

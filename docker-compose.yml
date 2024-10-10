@@ -5,8 +5,8 @@ services:
     container_name: double-star-surrealdb
     image: surrealdb/surrealdb:v2.0.0-dev
     environment:
-      SURREAL_USER: double-star
-      SURREAL_PASS: double-star
+      SURREAL_USER: double_star
+      SURREAL_PASS: double_star
       SURREAL_PATH: rocksdb:/data
     command: start
     networks:

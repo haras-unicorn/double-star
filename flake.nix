@@ -31,10 +31,21 @@
         }).linuxPackages.nvidia_x11_production;
       in
       {
+        packages.${system} = rec {
+          default = double-star;
+          nebulon = rustPkgs.workspace.nebulon { };
+          double-star = rustPkgs.workspace.double-star { };
+          orbitus = rustPkgs.workspace.orbitus { };
+        };
+
         devShells.default = pkgs.mkShell {
           RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
           PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
           CUDA_PATH = "${pkgs.cudatoolkit}";
+          RUST_BACKTRACE = 1;
+
+          DOUBLE_STAR_DB_USER = "double_star";
+          DOUBLE_STAR_DB_PASS = "double_star";
 
           shellHook = ''
             db="$(git rev-parse --show-toplevel)/scripts/db.nu"

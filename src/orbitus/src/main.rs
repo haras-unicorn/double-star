@@ -19,9 +19,8 @@ use tracing_subscriber::{
   layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
 };
 
-#[tokio::main]
 #[tracing::instrument]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
   let format_layer = tracing_subscriber::fmt::layer();
   let (filter_layer, filter_handle) =
     tracing_subscriber::reload::Layer::new(build_tracing_filter("info")?);
@@ -37,6 +36,8 @@ async fn main() -> anyhow::Result<()> {
     let new_filter = build_tracing_filter(log_level.as_str()).unwrap();
     *filter = new_filter;
   })?;
+
+  orbitus::run()?;
 
   Ok(())
 }
