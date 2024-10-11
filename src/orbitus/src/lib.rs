@@ -1,4 +1,7 @@
-use iced::{widget::text, Element, Task};
+use iced::{
+  widget::{column, container, text, text_input, vertical_space, Space},
+  Element, Length, Task,
+};
 
 pub fn run() -> anyhow::Result<()> {
   Ok(
@@ -12,13 +15,25 @@ pub fn run() -> anyhow::Result<()> {
 }
 
 #[derive(Debug, Clone)]
-enum Message {}
+enum Message {
+  Input(String),
+  Submit,
+}
 
-struct Orbitus {}
+struct Orbitus {
+  text: String,
+  input: String,
+}
 
 impl Orbitus {
   fn new() -> (Self, Task<Message>) {
-    (Self {}, Task::none())
+    (
+      Self {
+        text: "Hello, world!\n".to_string(),
+        input: "".to_string(),
+      },
+      Task::none(),
+    )
   }
 
   fn title(&self) -> String {
@@ -26,10 +41,28 @@ impl Orbitus {
   }
 
   fn update(&mut self, message: Message) -> Task<Message> {
-    match message {}
+    match message {
+      Message::Input(input) => self.input = input,
+      Message::Submit => {
+        self.text += self.input.as_str();
+        self.text += "\n";
+        self.input.clear();
+      }
+    };
+
+    Task::none()
   }
 
   fn view(&self) -> Element<Message> {
-    text("Hello World!").into()
+    let input = text_input("Type here!", self.input.as_str())
+      .on_input(|input| Message::Input(input))
+      .on_submit(Message::Submit);
+    container(
+      container(column![text(self.text.as_str()), vertical_space(), input])
+        .max_width(1024)
+        .align_left(Length::Fill),
+    )
+    .center_x(Length::Fill)
+    .into()
   }
 }

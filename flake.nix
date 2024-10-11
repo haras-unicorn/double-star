@@ -38,34 +38,31 @@
           orbitus = rustPkgs.workspace.orbitus { };
         };
 
-        devShells.default = pkgs.mkShell {
+        devShells.default = pkgs.mkShell rec {
           RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
           PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
           CUDA_PATH = "${pkgs.cudatoolkit}";
-          RUST_BACKTRACE = 1;
+          LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath buildInputs}";
+          RUST_BACKTRACE = "full";
 
           DOUBLE_STAR_DB_USER = "double_star";
           DOUBLE_STAR_DB_PASS = "double_star";
 
-          shellHook = ''
-            db="$(git rev-parse --show-toplevel)/scripts/db.nu"
+          buildInputs = with pkgs; [
+            # nebulon
+            pkg-config
+            openssl
 
-            docker compose up -d
-        
-            DOUBLE_STAR_DB_HOST="$($db host)"
-            export DOUBLE_STAR_DB_HOST
-            echo "DOUBLE_STAR_DB_HOST is set to $DOUBLE_STAR_DB_HOST"
+            # double-star
+            protobuf
+            cudatoolkit
+            nvidia_driver
 
-            DOUBLE_STAR_DB_PORT="$($db port)"
-            export DOUBLE_STAR_DB_PORT
-            echo "DOUBLE_STAR_DB_PORT is set to $DOUBLE_STAR_DB_PORT"
-
-            $db isready
-
-            export LD_LIBRARY_PATH="''${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}${nvidia_driver}/lib"
-            export EXTRA_LDFLAGS="''${EXTRA_LDFLAGS:+$EXTRA_LDFLAGS:}-L/lib -L${nvidia_driver}/lib"
-            export EXTRA_CCFLAGS="''${EXTRA_CCFLAGS:+$EXTRA_CCFLAGS:}-I/usr/include"
-          '';
+            # orbitus
+            libxkbcommon
+            libGL
+            wayland
+          ];
 
           packages = with pkgs; [
             # versioning
@@ -108,17 +105,26 @@
             rust-analyzer
             cargo-edit
 
-            # build inputs
-            pkg-config
-            openssl
-            protobuf
-            cudatoolkit
-            nvidia_driver
-
             # surrealdb
             surrealdb
             surrealdb-migrations
           ];
+
+          shellHook = ''
+            db="$(git rev-parse --show-toplevel)/scripts/db.nu"
+
+            docker compose up -d
+        
+            DOUBLE_STAR_DB_HOST="$($db host)"
+            export DOUBLE_STAR_DB_HOST
+            echo "DOUBLE_STAR_DB_HOST is set to $DOUBLE_STAR_DB_HOST"
+
+            DOUBLE_STAR_DB_PORT="$($db port)"
+            export DOUBLE_STAR_DB_PORT
+            echo "DOUBLE_STAR_DB_PORT is set to $DOUBLE_STAR_DB_PORT"
+
+            $db isready
+          '';
         };
       });
 }
