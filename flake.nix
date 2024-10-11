@@ -48,10 +48,17 @@
           DOUBLE_STAR_DB_USER = "double_star";
           DOUBLE_STAR_DB_PASS = "double_star";
 
+          NEBULON_USER = "double_star";
+          NEBULON_PASS = "double_star";
+
+          QUALIFIER = "xyz";
+          ORGANIZATION = "haras-unicorn";
+
           buildInputs = with pkgs; [
             # nebulon
             pkg-config
-            openssl
+            # FIXME: breaks curl for nix
+            # openssl
 
             # double-star
             protobuf
@@ -104,6 +111,7 @@
             rustfmt
             rust-analyzer
             cargo-edit
+            cargo-geiger
 
             # surrealdb
             surrealdb
@@ -122,6 +130,14 @@
             DOUBLE_STAR_DB_PORT="$($db port)"
             export DOUBLE_STAR_DB_PORT
             echo "DOUBLE_STAR_DB_PORT is set to $DOUBLE_STAR_DB_PORT"
+
+            NEBULON_HOST="$($db host)"
+            export NEBULON_HOST
+            echo "NEBULON_HOST is set to $NEBULON_HOST"
+
+            NEBULON_PORT="$($db port)"
+            export NEBULON_PORT
+            echo "NEBULON_PORT is set to $NEBULON_PORT"
 
             $db isready
           '';

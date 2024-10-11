@@ -1,53 +1,62 @@
-#![deny(
-  unsafe_code,
-  // reason = "Let's just not do it"
-)]
-#![deny(
-  clippy::unwrap_used,
-  clippy::expect_used,
-  clippy::panic,
-  clippy::unreachable,
-  clippy::arithmetic_side_effects
-  // reason = "We have to handle errors properly"
-)]
-#![deny(
-  clippy::dbg_macro,
-  // reason = "Use tracing instead"
-)]
+#![deny(unsafe_code)]
+#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![deny(clippy::arithmetic_side_effects)]
+#![deny(clippy::dbg_macro, clippy::print_stdout, clippy::print_stderr)]
+#![deny(clippy::todo)]
+#![deny(clippy::unreachable)]
+#![deny(clippy::allow_attributes_without_reason)]
 
-use tracing_subscriber::{
-  layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
-};
-
-#[tracing::instrument]
 fn main() -> anyhow::Result<()> {
-  let format_layer = tracing_subscriber::fmt::layer();
-  let (filter_layer, filter_handle) =
-    tracing_subscriber::reload::Layer::new(build_tracing_filter("info")?);
-  tracing_subscriber::registry()
-    .with(filter_layer)
-    .with(format_layer)
-    .try_init()?;
+  let config = gravity::config::new::<orbitus::config::Config>(
+    "ORBITUS",
+    env!("QUALIFIER"),
+    env!("ORGANIZATION"),
+    "orbitus",
+    concat!(env!("CARGO_PKG_REPOSITORY"), "/src/orbitus"),
+  );
+  let config_values = config.values();
+  let config_rx = config.subscribe();
 
-  // TODO: from config when loaded if needed
-  let log_level = "info".to_string();
-  filter_handle.modify(move |filter| {
-    #[allow(clippy::unwrap_used)] // NOTE: static and env doesn't change
-    let new_filter = build_tracing_filter(log_level.as_str()).unwrap();
-    *filter = new_filter;
-  })?;
+  let (double_star_tx, double_star_rx) =
+    flume::unbounded::<gravity::DoubleStarMessage>();
+  let (orbitus_tx, orbitus_rx) = flume::unbounded::<gravity::OrbitusMessage>();
+  let (config_tx, config_subscriber) = flume::unbounded();
 
-  orbitus::run()?;
+  let ws_config = config.values();
+  let ws_handle = std::thread::spawn(move || {
+    if let Err(err) = orbitus::ws::run(double_star_tx, orbitus_rx, ws_config) {
+      tracing::error!("Websocket failed: {err}");
+    }
+  });
+
+  let config_handle = std::thread::spawn(move || {
+    while let Ok(new_config) = config_subscriber.recv() {
+      if let Err(err) = config.export(new_config) {
+        tracing::error!("Config error: {}", err);
+      }
+    }
+  });
+
+  {
+    let orbitus_tx = orbitus_tx.clone();
+    orbitus::run(
+      orbitus_tx,
+      double_star_rx,
+      config_values,
+      config_tx,
+      config_rx,
+    )?;
+  }
+
+  orbitus_tx.send(gravity::OrbitusMessage::Exited)?;
+
+  if let Err(err) = ws_handle.join() {
+    return Err(anyhow::anyhow!("Join failed: {err:?}"));
+  }
+
+  if let Err(err) = config_handle.join() {
+    return Err(anyhow::anyhow!("Join failed: {err:?}"));
+  }
 
   Ok(())
-}
-
-fn build_tracing_filter(level: &str) -> anyhow::Result<EnvFilter> {
-  Ok(
-    tracing_subscriber::EnvFilter::builder()
-      .with_default_directive(tracing::level_filters::LevelFilter::WARN.into())
-      .with_env_var("ORBITUS_LOG")
-      .from_env()?
-      .add_directive(format!("orbitus={level}").parse()?),
-  )
 }

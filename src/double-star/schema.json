@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FileWrapper_for_FromFile",
+  "type": "object",
+  "required": ["ui"],
+  "properties": {
+    "log_level": {
+      "description": "Change log level",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/LogLevel"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ui": {
+      "description": "Orbitus UI config",
+      "allOf": [
+        {
+          "$ref": "#/definitions/UiConfig"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "LogLevel": {
+      "type": "string",
+      "enum": ["trace", "debug", "info", "warn", "error"]
+    },
+    "UiConfig": {
+      "type": "object",
+      "required": ["palette"],
+      "properties": {
+        "palette": {
+          "description": "UI colors",
+          "allOf": [
+            {
+              "$ref": "#/definitions/UiPaletteConfig"
+            }
+          ]
+        }
+      }
+    },
+    "UiPaletteConfig": {
+      "type": "object",
+      "required": ["dark", "light"],
+      "properties": {
+        "dark": {
+          "description": "Dark mode UI colors",
+          "allOf": [
+            {
+              "$ref": "#/definitions/UiPaletteModeConfig"
+            }
+          ]
+        },
+        "light": {
+          "description": "Light mode UI colors",
+          "allOf": [
+            {
+              "$ref": "#/definitions/UiPaletteModeConfig"
+            }
+          ]
+        }
+      }
+    },
+    "UiPaletteModeConfig": {
+      "type": "object",
+      "required": ["background", "danger", "primary", "success", "text"],
+      "properties": {
+        "background": {
+          "description": "Background color",
+          "type": "string"
+        },
+        "text": {
+          "description": "Text color",
+          "type": "string"
+        },
+        "primary": {
+          "description": "Primary color",
+          "type": "string"
+        },
+        "success": {
+          "description": "Success color",
+          "type": "string"
+        },
+        "danger": {
+          "description": "Failure color",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

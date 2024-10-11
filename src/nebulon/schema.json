@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FileWrapper_for_FromFile",
+  "type": "object",
+  "properties": {
+    "log_level": {
+      "description": "Change log level",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/LogLevel"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "LogLevel": {
+      "type": "string",
+      "enum": ["trace", "debug", "info", "warn", "error"]
+    }
+  }
+}

@@ -6,12 +6,37 @@ gitignore := absolute_path('.gitignore')
 prettierignore := absolute_path('.prettierignore')
 markdown-link-check-rc := absolute_path('.markdown-link-check.json')
 db := absolute_path('scripts/db.nu')
+double-star := absolute_path('src/double-star')
+nebulon := absolute_path('src/nebulon')
+orbitus := absolute_path('src/orbitus')
 
 default:
     @just --choose
 
-cargo2nix:
+dev *args:
+    cd '{{ root }}'; \
+      $env.DOUBLE_STAR_LOG = "wgpu_hal::gles::egl=error"; \
+      cargo run --bin double-star -- {{ args }}
+
+sync:
     cd '{{ root }}'; yes yes | cargo2nix
+
+    cd '{{ nebulon }}'; \
+      cargo run --quiet -- --print-schema | \
+      save -f schema.json
+    cd '{{ double-star }}'; \
+      cargo run --quiet -- --print-schema | \
+      save -f schema.json
+    cd '{{ orbitus }}'; \
+      cargo run --quiet -- --print-schema | \
+      save -f schema.json
+
+    nixpkgs-fmt '{{ root }}'
+
+    prettier --write \
+      --ignore-path '{{ gitignore }}' \
+      --cache --cache-strategy metadata \
+      '{{ root }}'
 
 format:
     cd '{{ root }}'; just --fmt --unstable
@@ -26,6 +51,8 @@ format:
       '{{ root }}'
 
     cd '{{ root }}'; cargo fmt --all
+
+    cd '{{ root }}'; cargo clippy --fix --allow-dirty --allow-staged
 
 lint:
     prettier --check \
