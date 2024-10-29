@@ -11,7 +11,7 @@ pub fn init(prefix: &str) -> anyhow::Result<Handle<EnvFilter, Registry>> {
 
   let format_layer = tracing_subscriber::fmt::layer();
   let (filter_layer, filter_handle) = tracing_subscriber::reload::Layer::new(
-    build_tracing_filter(prefix, &level)?,
+    build_tracing_filter(prefix, level)?,
   );
   tracing_subscriber::registry()
     .with(filter_layer)
