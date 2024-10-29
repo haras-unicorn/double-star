@@ -1,8 +1,8 @@
 use futures::StreamExt;
 use iced::{
   widget::{
-    button, column, container, row, text, text::danger, text_input,
-    vertical_space, scrollable
+    button, column, container, row, scrollable, text, text::danger, text_input,
+    vertical_space,
   },
   Element, Length, Subscription, Task,
 };
@@ -124,7 +124,7 @@ impl Orbitus {
         }
         gravity::DoubleStarMessage::Break => {
           self.chat += "\n";
-        },
+        }
       },
       Message::Config(config) => {
         self.config = config;
@@ -162,13 +162,9 @@ impl Orbitus {
     let error = text(self.error.as_str()).style(danger);
     let column = column![chat, vertical_space(), error, input_row];
 
-    container(
-      container(column)
-        .max_width(1024)
-        .align_left(Length::Fill),
-    )
-    .center_x(Length::Fill)
-    .into()
+    container(container(column).max_width(1024).align_left(Length::Fill))
+      .center_x(Length::Fill)
+      .into()
   }
 }
 

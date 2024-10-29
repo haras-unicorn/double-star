@@ -217,6 +217,8 @@ impl Client {
   pub(crate) async fn new(
     config: super::config::ClientConfig,
   ) -> anyhow::Result<Self> {
+    let is_memory =
+      matches!(config.connection, crate::config::ConnectionConfig::Memory);
     let address = match config.connection {
       crate::config::ConnectionConfig::Embedded(
         crate::config::EmbeddedConnectionConfig { path },
@@ -246,28 +248,33 @@ impl Client {
       ) => {
         format!("ws://{host}:{port}")
       }
+      crate::config::ConnectionConfig::Memory => "mem://".to_string(),
     };
 
     let user = config.auth.user;
     let pass = config.auth.pass;
 
     let private = surrealdb::engine::any::connect(address.clone()).await?;
-    private
-      .signin(Root {
-        username: user.as_str(),
-        password: pass.as_str(),
-      })
-      .await?;
+    if !is_memory {
+      private
+        .signin(Root {
+          username: user.as_str(),
+          password: pass.as_str(),
+        })
+        .await?;
+    }
     private.use_ns("double_star").await?;
     private.use_db("private").await?;
 
     let public = surrealdb::engine::any::connect(address).await?;
-    public
-      .signin(Root {
-        username: user.as_str(),
-        password: pass.as_str(),
-      })
-      .await?;
+    if !is_memory {
+      public
+        .signin(Root {
+          username: user.as_str(),
+          password: pass.as_str(),
+        })
+        .await?;
+    }
     public.use_ns("double_star").await?;
     public.use_db("public").await?;
 

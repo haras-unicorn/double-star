@@ -44,18 +44,18 @@ impl gravity::config::Values for Config {
 #[derive(Default, Clone, serde::Deserialize)]
 pub struct ClientConfig {
   #[serde(flatten)]
-  pub(super) auth: AuthConfig,
+  pub auth: AuthConfig,
   #[serde(flatten)]
-  pub(super) connection: ConnectionConfig,
+  pub connection: ConnectionConfig,
 }
 
 #[derive(derivative::Derivative, Clone, serde::Deserialize)]
 #[derivative(Default)]
 pub struct AuthConfig {
   #[derivative(Default(value = "\"double_star\".to_string()"))]
-  pub(super) user: String,
+  pub user: String,
   #[derivative(Default(value = "\"double_star\".to_string()"))]
-  pub(super) pass: String,
+  pub pass: String,
 }
 
 #[derive(derivative::Derivative, Clone, serde::Deserialize)]
@@ -65,6 +65,7 @@ pub enum ConnectionConfig {
   #[derivative(Default)]
   Websocket(WebsocketConnectionConfig),
   Embedded(EmbeddedConnectionConfig),
+  Memory,
 }
 
 #[derive(derivative::Derivative, Clone, serde::Deserialize)]
