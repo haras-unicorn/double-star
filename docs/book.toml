@@ -1,0 +1,6 @@
+[book]
+authors = ["haras <social@haras.anonaddy.me>"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Double Star"

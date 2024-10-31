@@ -87,6 +87,7 @@
             fd
 
             # markdown
+            mdbook
             marksman
             markdownlint-cli
             nodePackages.markdown-link-check
